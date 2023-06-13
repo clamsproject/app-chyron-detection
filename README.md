@@ -1,40 +1,37 @@
+# BURN AFTER READING
 
-___
-# Parameters
-This CLAMS app accepts the following query parameters
+Delete this section of the document once the app development is done, before publishing the repository. 
 
-- pretty
-- sampleRatio: integer, default: 10
+---
+This skeleton code is a scaffolding for Python-based CLAMS app development. Specifically, it contains 
+
+1. `app.py` and `metadata.py` to write the app 
+1. `requirements.txt` to specify python dependencies
+1. `Containerfile` to containerize the app and specify system dependencies
+1. `.gitignore` and `.dorckrignore` files listing commonly ignored files
+1. an empty `LICENSE` file to replace with an actual license information of the app
+1. `CLAMS-generic-readme.md` file with basic instructions of app installation and execution
+1. This `README.md` file for additional information not specified in the generic readme file. 
+1. A number of GitHub Actions workflows for issue/bug-report management 
+1. A GHA workflow to publish app images upon any push of a git tag
+   * **NOTE**: All GHA workflows included are designed to only work in repositories under `clamsproject` organization.
+
+Before pushing your first commit, please make sure to delete this section of the document.
+
+Then use the following section to document any additional information specific to this app. If your app works significantly different from what's described in the generic readme file, be as specific as possible. 
 
 ---
 
-### Using docker
-We provide a [`Dockerfile`](Dockerfile). If you want to run the slate detector as a docker container (not worrying about dependencies), build an image from the `Dockerfile` and run it with the target directory mounted to `/data`. Just MAKE SURE that target directory is writable by others (`chmod o+w $TARGET_DIR`). For example, 
+## User instruction
 
-```bash
-chmod -R o+w data_dir && docker build . -t slate_detector && docker run --rm -p 5000:5000 -v data_dir:/data slate_detector
-```
-This will run the slate detector on port 5000. 
+General user instruction for CLAMS apps is available at [CLAMS Apps documentation](https://apps.clams.ai/clamsapp/).
 
-The video files should be in a directory named `video` in the data_dir directory.
+Below is a list of additional information specific to this app.
 
-The slate detector can be applied to an mmif from the terminal with the following command. 
-`curl -X PUT -d @path/to/mmif/file http://0.0.0.0:5000`
+### System requirments
 
-Where the mmif file contains a video document with a location specified relative to the docker mount location:
-`{
-  "metadata": {
-    "mmif": "http://mmif.clams.ai/0.2.1"
-  },
-  "documents": [
-    {
-      "@type": "http://mmif.clams.ai/0.2.1/vocabulary/VideoDocument",
-      "properties": {
-        "mime": "video",
-        "location": "/data/video/cpb-aacip-29-00ns1swq.h264.mp4",
-        "id": "d1"
-      }
-    }
-  ],
-  "views": []
-}`
+(Any system-level software required to run this app)
+
+### Configurable runtime parameter
+
+(Parameters should be already well-described in the app metadata. But you can use this space to show examples, for instance.)
