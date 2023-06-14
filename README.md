@@ -1,37 +1,36 @@
-# BURN AFTER READING
-
-Delete this section of the document once the app development is done, before publishing the repository. 
-
----
-This skeleton code is a scaffolding for Python-based CLAMS app development. Specifically, it contains 
-
-1. `app.py` and `metadata.py` to write the app 
-1. `requirements.txt` to specify python dependencies
-1. `Containerfile` to containerize the app and specify system dependencies
-1. `.gitignore` and `.dorckrignore` files listing commonly ignored files
-1. an empty `LICENSE` file to replace with an actual license information of the app
-1. `CLAMS-generic-readme.md` file with basic instructions of app installation and execution
-1. This `README.md` file for additional information not specified in the generic readme file. 
-1. A number of GitHub Actions workflows for issue/bug-report management 
-1. A GHA workflow to publish app images upon any push of a git tag
-   * **NOTE**: All GHA workflows included are designed to only work in repositories under `clamsproject` organization.
-
-Before pushing your first commit, please make sure to delete this section of the document.
-
-Then use the following section to document any additional information specific to this app. If your app works significantly different from what's described in the generic readme file, be as specific as possible. 
-
----
+# app-chyrondetection
 
 ## User instruction
 
 General user instruction for CLAMS apps is available at [CLAMS Apps documentation](https://apps.clams.ai/clamsapp/).
 
-Below is a list of additional information specific to this app.
+We provide a `Containerfile`. If you want to run this app as a docker container (not worrying about dependencies), build 
+an image from the `Containerfile` via the following command in the app directory:
 
-### System requirments
+```bash
+docker build . -f Containerfile -t chyrons
+```
 
-(Any system-level software required to run this app)
+Then, run the image with the target directory mounted to `/data`. Just MAKE SURE that target directory is writable by others (`chmod o+w $TARGET_DIR`):
 
-### Configurable runtime parameter
+```bash
+docker run -v path/to/target/data:/data -p 5000:5000
+```
 
-(Parameters should be already well-described in the app metadata. But you can use this space to show examples, for instance.)
+From here, the app can be run through the terminal, by posting a mmif file to the host port:
+
+```bash
+curl -X POST -d @path/to/target/mmif http://0.0.0.0:5000
+```
+
+## System requirments
+
+This chyron detector relies on the Tesseract library for OCR within the chyron boxes. The various libraries required for Tesseract are visible within the `Containerfile`. Ensure that Tesseract4, as well as which language data you are using, are properly installed (the Container image will do this for you).
+
+## Configurable runtime parameter
+
+The runtime parameters of this app are described in its metadata. In order to use these arguments, simply pass them through the POST request. For instance, the following increases the minimum number of frames that will be labeled as a chyron to 20:
+
+```bash
+curl -X POST -d @path/to/target/mmif http://0.0.0.0:5000?minFrameCount=20
+```
