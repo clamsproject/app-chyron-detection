@@ -14,24 +14,24 @@ ARG CLAMS_APP_VERSION
 ENV CLAMS_APP_VERSION ${CLAMS_APP_VERSION}
 ################################################################################
 
-RUN apt-get --allow-releaseinfo-change update && apt-get install -y build-essential cmake \
-    wget git unzip
+# RUN apt-get --allow-releaseinfo-change update && apt-get install -y build-essential cmake \
+#     wget git unzip
 ################################################################################
 # clams-python base images are based on debian distro
 # install more system packages as needed using the apt manager
 ################################################################################
 
-# lib for tesseract
-RUN apt-get -y install \ 
-    g++ \
-    autoconf \
-    automake \ 
-    libtool \
-    autoconf-archive \
-    zlib1g-dev \
-    libicu-dev \
-    libpango1.0-dev \
-    libcairo2-dev
+# # lib for tesseract
+# RUN apt-get -y install \ 
+#     g++ \
+#     autoconf \
+#     automake \ 
+#     libtool \
+#     autoconf-archive \
+#     zlib1g-dev \
+#     libicu-dev \
+#     libpango1.0-dev \
+#     libcairo2-dev
 
 # tesseract 4
 RUN apt-get install -y libleptonica-dev \
