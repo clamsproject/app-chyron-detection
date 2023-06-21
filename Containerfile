@@ -72,5 +72,5 @@ WORKDIR /app
 RUN pip3 install -r requirements.txt
 
 # default command to run the CLAMS app in a production server 
-CMD ["python3", "app.py", "--production"]
+CMD ["python3", "app.py","--production"]
 ################################################################################

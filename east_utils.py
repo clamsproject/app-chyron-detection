@@ -8,7 +8,7 @@ from mmif import Mmif, View, DocumentTypes, AnnotationTypes
 
 BOX_MIN_CONF = 0.1
 SAMPLE_RATIO = 30
-net = cv2.dnn.readNet("data/frozen_east_text_detection.pb")
+net = cv2.dnn.readNet("/app/cv_data/frozen_east_text_detection.pb")
 
 
 def process_image(f):
