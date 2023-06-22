@@ -1,5 +1,5 @@
 # Use the same base image version as the clams-python python library version
-FROM ghcr.io/clamsproject/clams-python-opencv4:1.0.2
+FROM ghcr.io/clamsproject/clams-python-opencv4:1.0.3
 # See https://github.com/orgs/clamsproject/packages?tab=packages&q=clams-python for more base images
 # IF you want to automatically publish this image to the clamsproject organization, 
 # 1. you should have generated this template without --no-github-actions flag
@@ -21,18 +21,6 @@ ENV CLAMS_APP_VERSION ${CLAMS_APP_VERSION}
 # install more system packages as needed using the apt manager
 ################################################################################
 
-# # lib for tesseract
-# RUN apt-get -y install \ 
-#     g++ \
-#     autoconf \
-#     automake \ 
-#     libtool \
-#     autoconf-archive \
-#     zlib1g-dev \
-#     libicu-dev \
-#     libpango1.0-dev \
-#     libcairo2-dev
-
 # tesseract 4
 RUN apt-get install -y libleptonica-dev \
     libtesseract4 \
@@ -42,26 +30,6 @@ RUN apt-get install -y libleptonica-dev \
 # get language data
 RUN apt-get install -y \
     tesseract-ocr-eng
-    #add more if needed
-
-#RUN apt-get -y clean all && |
-#   rm -rf /var/lib/apt/lists/* && |
-#   # Clean
-#   apt-get -y remove |
-#        python3-dev \
-#        libatlas-base-dev \
-#        gfortran \
-#        libgtk2.0-dev \
-#        libavcodec-dev \
-#        libavformat-dev \
-#        libswscale-dev \
-#        libjpeg-dev \
-#        libpng-dev \
-#        libtiff-dev \
-#        libv4l-dev
-#        && \
-#    apt-get clean && \
-#    rm -rf /opencv /opencv_contrib /var/lib/apt/lists/*
 
 
 

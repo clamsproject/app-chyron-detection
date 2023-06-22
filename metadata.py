@@ -22,7 +22,7 @@ def appmetadata() -> AppMetadata:
     
     # Basic Information
     metadata = AppMetadata(
-        name="Chyron Recognition",
+        name="chyron-recognition",
         description="This tool detects chyrons and generates time segments.",
         app_license="MIT",  
         identifier="chyron-recognition",
@@ -32,7 +32,7 @@ def appmetadata() -> AppMetadata:
     # I/O Spec
     metadata.add_input(DocumentTypes.VideoDocument)
 
-    metadata.add_output(AnnotationTypes.TimeFrame, properties={"frameType":"string"})
+    metadata.add_output(AnnotationTypes.TimeFrame, properties={"frameType":"chyron"})
     metadata.add_output(DocumentTypes.TextDocument)
     metadata.add_output(AnnotationTypes.Alignment)
     
