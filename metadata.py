@@ -25,8 +25,8 @@ def appmetadata() -> AppMetadata:
         name="Chyron Recognition",
         description="This tool detects chyrons and generates time segments.",
         app_license="MIT",  
-        identifier="chyron-recognition",
-        url="https://github.com/clamsproject/app-chyronrecognition",
+        identifier="chyron-text-recognition",
+        url="https://github.com/clamsproject/app-chyron-text-recognition",
     )
 
     # I/O Spec
