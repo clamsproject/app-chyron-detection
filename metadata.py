@@ -23,7 +23,7 @@ def appmetadata() -> AppMetadata:
     # Basic Information
     metadata = AppMetadata(
         name="Chyron Text Recognition",
-        description="This tool detects chyrons and generates time segments.",
+        description="This tool detects chyrons, generates time segments, and performs OCR on detected boxes.",
         app_license="MIT",  
         identifier="chyron-text-recognition",
         url="https://github.com/clamsproject/app-chyron-text-recognition",
