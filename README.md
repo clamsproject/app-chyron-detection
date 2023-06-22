@@ -1,10 +1,10 @@
-# app-chyrondetection
+# app-chyron-recognition
 
 General user instruction for CLAMS apps is available at [CLAMS Apps documentation](https://apps.clams.ai/clamsapp/).
 
 ## System requirments
 
-This chyron detector relies on the Tesseract library for OCR within the chyron boxes. The various libraries required for Tesseract are visible within the `Containerfile`. Ensure that Tesseract4, as well as which language data you are using, are properly installed (the Container image will do this for you).
+This chyron recognition app relies on the Tesseract library for OCR within the chyron boxes. The various libraries required for Tesseract are visible within the `Containerfile`. Ensure that Tesseract4, as well as which language data you are using, are properly installed (the Container image will do this for you).
 
 ## Configurable runtime parameter
 
