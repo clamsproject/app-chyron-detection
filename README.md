@@ -1,27 +1,6 @@
 # app-chyrondetection
 
-## User instruction
-
 General user instruction for CLAMS apps is available at [CLAMS Apps documentation](https://apps.clams.ai/clamsapp/).
-
-We provide a `Containerfile`. If you want to run this app as a docker container (not worrying about dependencies), build 
-an image from the `Containerfile` via the following command in the app directory:
-
-```bash
-docker build . -f Containerfile -t chyrons
-```
-
-Then, run the image with the target directory mounted to `/data`. Just MAKE SURE that target directory is writable by others (`chmod o+w $TARGET_DIR`):
-
-```bash
-docker run -v path/to/target/data:/data -p 5000:5000
-```
-
-From here, the app can be run through the terminal, by posting a mmif file to the host port:
-
-```bash
-curl -X POST -d @path/to/target/mmif http://0.0.0.0:5000
-```
 
 ## System requirments
 

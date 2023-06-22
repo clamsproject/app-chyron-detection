@@ -32,7 +32,7 @@ def appmetadata() -> AppMetadata:
     # I/O Spec
     metadata.add_input(DocumentTypes.VideoDocument)
 
-    metadata.add_output(AnnotationTypes.TimeFrame, properties={"frameType":"string"})
+    metadata.add_output(AnnotationTypes.TimeFrame, properties={"frameType":"chyron"})
     metadata.add_output(DocumentTypes.TextDocument)
     metadata.add_output(AnnotationTypes.Alignment)
     
