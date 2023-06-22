@@ -22,7 +22,7 @@ def appmetadata() -> AppMetadata:
     
     # Basic Information
     metadata = AppMetadata(
-        name="chyron-recognition",
+        name="Chyron Recognition",
         description="This tool detects chyrons and generates time segments.",
         app_license="MIT",  
         identifier="chyron-recognition",
