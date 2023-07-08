@@ -1,6 +1,6 @@
 # app-chyron-recognition
 
-General user instruction for CLAMS apps is available at [CLAMS Apps documentation](https://apps.clams.ai/clamsapp/).
+General user instruction for CLAMS apps is available at [CLAMS Apps documentation](https://apps.clams.ai/clamsapp).
 
 ## System requirments
 
