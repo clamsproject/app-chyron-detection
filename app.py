@@ -154,7 +154,7 @@ class Chyronrecognition(ClamsApp):
                             frame_list = []
             counter += 1
         return chyrons
-    
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -165,13 +165,14 @@ if __name__ == "__main__":
     # parser.add_argument(more_arg...)
 
     parsed_args = parser.parse_args()
-
     # create the app instance
     app = Chyronrecognition()
-
     http_app = Restifier(app, port=int(parsed_args.port)
     )
+
     if parsed_args.production:
         http_app.serve_production()
     else:
         http_app.run()
+
+    
