@@ -1,20 +1,17 @@
 import argparse
+import logging
+import warnings
 from typing import Union
 
-# CLAMS Imports
+import cv2
 from clams import ClamsApp, Restifier
-from mmif import Mmif, View, Annotation, Document, AnnotationTypes, DocumentTypes
+from mmif import Mmif, AnnotationTypes, DocumentTypes
+from mmif.utils import video_document_helper as vdh
 
-# App Imports
-import PIL
-import math
-import uuid 
-import cv2 
-import utils 
-import pytesseract
+import apputils
 
-#=============================================================================|
-class Chyronrecognition(ClamsApp):
+
+class ChyronDetection(ClamsApp):
 
     def __init__(self):
         super().__init__()
@@ -24,155 +21,79 @@ class Chyronrecognition(ClamsApp):
         pass
 
     def _annotate(self, mmif: Union[str, dict, Mmif], **parameters) -> Mmif:
-        # see https://sdk.clams.ai/autodoc/clams.app.html#clams.app.ClamsApp._annotate
         if not isinstance(mmif, Mmif):
-            mmif = Mmif(mmif) 
-        
-        video_filename = mmif.get_document_location(DocumentTypes.VideoDocument)
+            mmif = Mmif(mmif)
+
+        vds = mmif.get_documents_by_type(DocumentTypes.VideoDocument)
+        if vds:
+            vd = vds[0]
+        else:
+            warnings.warn("No video document found in the input MMIF.")
+            return mmif
         config = self.get_configuration(**parameters)
         unit = config["timeUnit"]
         new_view = mmif.new_view()
-        self.sign_view(new_view, config)
-        new_view.new_contain(
-            AnnotationTypes.TimeFrame,
-            timeUnit=unit,
-            document=mmif.get_documents_by_type(DocumentTypes.VideoDocument)[0].id 
-        )
-        new_view.new_contain(DocumentTypes.TextDocument)
-        new_view.new_contain(AnnotationTypes.Alignment)
-
-        chyron_results = self.run_chyrondetection(video_filename, **parameters)
-        for chyron_result in chyron_results:
+        self.sign_view(new_view, parameters)
+        new_view.new_contain(AnnotationTypes.TimeFrame, timeUnit=unit, document=vd.id)
+        for start_frame, end_frame in self.run_chyrondetection(vd, config):
             timeframe_annotation = new_view.new_annotation(AnnotationTypes.TimeFrame)
-            timeframe_annotation.add_property("start", chyron_result["start_frame"])
-            timeframe_annotation.add_property("end", chyron_result["end_frame"])
+            timeframe_annotation.add_property("start", vdh.convert(start_frame, 'f', unit, vd.get_property("fps")))
+            timeframe_annotation.add_property("end", vdh.convert(end_frame, 'f', unit, vd.get_property("fps")))
             timeframe_annotation.add_property("frameType", "chyron")
-
-            text_document = new_view.new_textdocument(chyron_result["text"])
-
-            align_annotation = new_view.new_annotation(AnnotationTypes.Alignment)
-            align_annotation.add_property("source", timeframe_annotation.id)
-            align_annotation.add_property("target", text_document.id)
         return mmif 
 
-    @staticmethod
-    def process_chyron(start_seconds, end_seconds, start_frame, end_frame, frame_list, chyron_box):
-        #frames = [frame_list[0], frame_list[math.floor(len(frame_list) /2)], frame_list[-1]]
-        texts = []
-        for _id, frame in enumerate(frame_list):
-            bottom_third = frame[math.floor(0.6 * frame.shape[0]):,:]
-            img = utils.preprocess(bottom_third)
-            img = PIL.Image.fromarray(img)
-            if chyron_box:
-                img = img[chyron_box[1]:chyron_box[3],chyron_box[0]:chyron_box[2]]
-            #img.save(f"sample_images{guid}_{_id}.png")
-            text = pytesseract.image_to_string(
-                img, 
-                config="-c tessedit_char_whitelist='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.\n'"
-            )
-            texts.append(text)
-        text = max(texts,key=len)
-        return {
-            "start_seconds":start_seconds,
-            "end_seconds": end_seconds,
-            "start_frame": start_frame,
-            "end_frame": end_frame,
-            "chyron_box": chyron_box,
-            "text":text
-        }
-    
-    @staticmethod
-    def frame_has_chyron(frame, threshold):
-        return utils.get_chyron(frame, threshold)
-    
-    @staticmethod
-    def filter_boxes(box_list, frame_height):
-        if not box_list:
-            return None
-        bottom_third_boxes = [box for box in box_list if box[1] > (math.floor(.4 * frame_height))]
-        return max(bottom_third_boxes, key=lambda x: (x[3]-x[1]) *(x[2]-x[0]), default=None)
-    
-    def run_chyrondetection(
-            self, video_filename, **kwargs
-    ):
-        sample_ratio = int(kwargs.get("sampleRatio", 10))
-        min_duration = int(kwargs.get("minFrameCount", 10))
-        threshold = 0.5 if "threshold" not in kwargs else float(kwargs["threshold"])
+    def run_chyrondetection(self, vd, configuration):
+        self.logger.debug(f"video_filename: {vd.location_path()}")
+        cap = vdh.capture(vd)
 
-        cap = cv2.VideoCapture(video_filename)
-        counter = 0
-        chyrons = []
+        self.logger.debug(f"{vd.get_property('frameCount')}, {configuration['sampleRatio']}")
+        frames_to_test = vdh.sample_frames(0, int(vd.get_property('frameCount')), configuration['sampleRatio'])
+        self.logger.debug(f"frames_to_test: {frames_to_test}")
+        found_chyrons = []
         in_chyron = False
         start_frame = None
-        start_seconds = None 
-        frame_list = []
-        chyron_box = None 
-        while True:
+        cur_frame = frames_to_test[0]
+        for cur_frame in frames_to_test:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, cur_frame - 1)
             ret, frame = cap.read()
             if not ret:
-                break 
-            if counter > 30 * 60 * 60 * 5:
+                break
+            is_chyron = apputils.get_chyron(frame, threshold=configuration['threshold'])
+            self.logger.debug(f"cur_frame: {cur_frame}, chyron? : {is_chyron is not None}")
+            if is_chyron:
+                if not in_chyron:
+                    in_chyron = True
+                    start_frame = cur_frame
+            else:
                 if in_chyron:
-                    frame_list.append(frame)
-                    if counter - start_frame > min_duration:
-                        chyrons.append(
-                            self.process_chyron(
-                            start_seconds = start_seconds,
-                            end_seconds   = cap.get(cv2.CAP_PROP_POS_MSEC),
-                            start_frame   = start_frame,
-                            end_frame     = counter,
-                            frame_list    = frame_list,
-                            chyron_box    = chyron_box
-                            )
-                        )
-                        frame_list = []
-                break 
+                    in_chyron = False
+                    if cur_frame - start_frame > configuration['minFrameCount']:
+                        found_chyrons.append((start_frame, cur_frame))
+        if in_chyron:
+            if cur_frame - start_frame > configuration['minFrameCount']:
+                found_chyrons.append((start_frame, cur_frame))
+        return found_chyrons
 
-            if counter % sample_ratio == 0:
-                result = self.frame_has_chyron(frame, threshold=threshold)
-                chyron_box = self.filter_boxes(result, frame.shape[0])
-                if chyron_box:
-                    frame_list.append(frame)
-                    if not in_chyron:
-                        in_chyron = True
-                        start_frame = counter
-                        start_seconds = cap.get(cv2.CAP_PROP_POS_MSEC)
-                else:
-                    if in_chyron:
-                        in_chyron = False
-                        if counter - start_frame > min_duration:
-                            chyrons.append(
-                                self.process_chyron(
-                                    start_seconds = start_seconds,
-                                    end_seconds   = cap.get(cv2.CAP_PROP_POS_MSEC),
-                                    start_frame   = start_frame,
-                                    end_frame     = counter,
-                                    frame_list    = frame_list,
-                                    chyron_box    = chyron_box
-                                )
-                            )
-                            frame_list = []
-            counter += 1
-        return chyrons
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--port", action="store", default="5000", help="set port to listen"
-    )
+    parser.add_argument("--port", action="store", default="5000", help="set port to listen" )
     parser.add_argument("--production", action="store_true", help="run gunicorn server")
-    # more arguments as needed
+    # add more arguments as needed
     # parser.add_argument(more_arg...)
 
     parsed_args = parser.parse_args()
-    # create the app instance
-    app = Chyronrecognition()
-    http_app = Restifier(app, port=int(parsed_args.port)
-    )
 
+    # create the app instance
+    app = ChyronDetection()
+
+    http_app = Restifier(app, port=int(parsed_args.port))
+    # for running the application in production mode
     if parsed_args.production:
         http_app.serve_production()
+    # development mode
     else:
+        app.logger.setLevel(logging.DEBUG)
         http_app.run()
 
     

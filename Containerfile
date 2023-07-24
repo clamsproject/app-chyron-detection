@@ -1,5 +1,5 @@
 # Use the same base image version as the clams-python python library version
-FROM ghcr.io/clamsproject/clams-python-opencv4:1.0.3
+FROM ghcr.io/clamsproject/clams-python-opencv4-torch2:1.0.9
 # See https://github.com/orgs/clamsproject/packages?tab=packages&q=clams-python for more base images
 # IF you want to automatically publish this image to the clamsproject organization, 
 # 1. you should have generated this template without --no-github-actions flag
@@ -14,24 +14,10 @@ ARG CLAMS_APP_VERSION
 ENV CLAMS_APP_VERSION ${CLAMS_APP_VERSION}
 ################################################################################
 
-# RUN apt-get --allow-releaseinfo-change update && apt-get install -y build-essential cmake \
-#     wget git unzip
 ################################################################################
 # clams-python base images are based on debian distro
 # install more system packages as needed using the apt manager
 ################################################################################
-
-# tesseract 4
-RUN apt-get install -y libleptonica-dev \
-    libtesseract4 \
-    libtesseract-dev \
-    tesseract-ocr
-
-# get language data
-RUN apt-get install -y \
-    tesseract-ocr-eng
-
-
 
 ################################################################################
 # main app installation
@@ -40,5 +26,5 @@ WORKDIR /app
 RUN pip3 install -r requirements.txt
 
 # default command to run the CLAMS app in a production server 
-CMD ["python3", "app.py","--production"]
+CMD ["python3", "app.py", "--production"]
 ################################################################################

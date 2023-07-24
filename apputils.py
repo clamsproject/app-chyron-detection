@@ -1,3 +1,4 @@
+import math
 from typing import List, Tuple
 import PIL
 
@@ -107,3 +108,18 @@ def image_to_east_boxes(image: np.array) -> List[Tuple[int, int, int, int]]:
         endY = int(endY * rH)
         box_list.append((startX, startY, endX, endY))
     return box_list
+
+
+def get_chyron(frame, threshold=.03):
+    boxes = image_to_east_boxes(frame)
+    text_box_mask = np.zeros(frame.shape)
+    for box in boxes:  # box is (startX, startY, endX, endY)
+        text_box_mask[box[1]:box[3], box[0]:box[2]] = 1
+    bottom_third = text_box_mask[math.floor(.6 * frame.shape[0]):, :]
+    top = text_box_mask[:math.floor(.6 * frame.shape[0]), :]
+    if np.sum(top) / (top.shape[0] * top.shape[1]) > .5:
+        return None
+    if np.sum(bottom_third) / (bottom_third.shape[0] * bottom_third.shape[1]) > threshold:
+        bottom_third_boxes = [box for box in boxes if box[1] > (math.floor(.4 * frame.shape[0]))]
+        return max(bottom_third_boxes, key=lambda x: (x[3] - x[1]) * (x[2] - x[0]), default=None)
+    return None

@@ -6,6 +6,7 @@ DO NOT CHANGE the name of the file
 
 from mmif import DocumentTypes, AnnotationTypes
 
+from clams.app import ClamsApp
 from clams.appmetadata import AppMetadata
 
 
@@ -22,26 +23,23 @@ def appmetadata() -> AppMetadata:
     
     # Basic Information
     metadata = AppMetadata(
-        name="Chyron Text Recognition",
-        description="This tool detects chyrons, generates time segments, and performs OCR on detected boxes.",
+        name="Chyron Detection",
+        description="This tool detects chyrons, generates time segments.",
         app_license="MIT",  
-        identifier="chyron-text-recognition",
-        url="https://github.com/clamsproject/app-chyron-text-recognition",
+        identifier="chyron-detection",
+        url="https://github.com/clamsproject/app-chyron-detection",
     )
 
     # I/O Spec
     metadata.add_input(DocumentTypes.VideoDocument)
-
-    metadata.add_output(AnnotationTypes.TimeFrame, properties={"frameType":"chyron"})
-    metadata.add_output(DocumentTypes.TextDocument)
-    metadata.add_output(AnnotationTypes.Alignment)
+    metadata.add_output(AnnotationTypes.TimeFrame, properties={"frameType": "chyron"})
     
     # Runtime Parameters
     metadata.add_parameter(name="timeUnit",
                            description="unit for output timeframe",
                            type="string",
                            default="frames",
-                           choices=["frames","milliseconds"])
+                           choices=["frames", "seconds", "milliseconds"])
 
     metadata.add_parameter(name="sampleRatio",
                            description="Frequency to sample frames",
@@ -64,4 +62,7 @@ def appmetadata() -> AppMetadata:
 # DO NOT CHANGE the main block
 if __name__ == '__main__':
     import sys
-    sys.stdout.write(appmetadata().jsonify(pretty=True))
+    metadata = appmetadata()
+    for param in ClamsApp.universal_parameters:
+        metadata.add_parameter(**param)
+    sys.stdout.write(metadata.jsonify(pretty=True))
